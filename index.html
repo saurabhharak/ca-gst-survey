@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GST Reconciliation Survey — Help Us Build the Right Tool</title>
+  <meta name="description" content="Quick 3-minute survey for CAs. Help shape an AI-powered GST reconciliation tool. Get a free mismatch report of your data.">
+  <style>
+    /* === Reset & Base === */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --parchment: #f5f4ed;
+      --ivory: #faf9f5;
+      --white: #ffffff;
+      --warm-sand: #e8e6dc;
+      --near-black: #141413;
+      --dark-surface: #30302e;
+      --terracotta: #c96442;
+      --coral: #d97757;
+      --charcoal-warm: #4d4c48;
+      --olive-gray: #5e5d59;
+      --stone-gray: #87867f;
+      --dark-warm: #3d3d3a;
+      --warm-silver: #b0aea5;
+      --border-cream: #f0eee6;
+      --border-warm: #e8e6dc;
+      --ring-warm: #d1cfc5;
+      --focus-blue: #3898ec;
+      --error-crimson: #b53333;
+      --font-serif: Georgia, 'Times New Roman', serif;
+      --font-sans: system-ui, -apple-system, 'Segoe UI', Inter, sans-serif;
+      --shadow-whisper: rgba(0,0,0,0.05) 0px 4px 24px;
+      --shadow-ring: 0px 0px 0px 1px var(--ring-warm);
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--parchment);
+      color: var(--near-black);
+      line-height: 1.6;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+
+    #app {
+      max-width: 640px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* === Screens === */
+    .screen {
+      display: none;
+      min-height: 100dvh;
+      padding: 0 16px 48px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 300ms ease-out, transform 300ms ease-out;
+    }
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .screen.slide-out-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      pointer-events: none;
+    }
+    .screen.slide-in-right {
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateX(40px);
+    }
+
+    .screen-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-top: 24px;
+    }
+    .screen-content.center {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding-top: 48px;
+    }
+
+    /* === Typography === */
+    h1 {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--near-black);
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--near-black);
+      margin-bottom: 8px;
+    }
+    h3 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--near-black);
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: var(--olive-gray);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .helper {
+      font-size: 14px;
+      color: var(--stone-gray);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    /* === Welcome Screen === */
+    .welcome-icon {
+      margin-bottom: 20px;
+    }
+    .stats-row {
+      display: flex;
+      gap: 0;
+      justify-content: center;
+      margin-bottom: 32px;
+      background: var(--ivory);
+      border: 1px solid var(--border-cream);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .stat {
+      text-align: center;
+      flex: 1;
+      padding: 16px 8px;
+      border-right: 1px solid var(--border-cream);
+    }
+    .stat:last-child {
+      border-right: none;
+    }
+    .stat-value {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--terracotta);
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--stone-gray);
+      letter-spacing: 0.3px;
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* === Header & Progress === */
+    .screen-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0 8px;
+    }
+    .progress-info {
+      font-size: 14px;
+      color: var(--stone-gray);
+      font-weight: 500;
+    }
+    .progress-bar {
+      height: 3px;
+      background: var(--border-cream);
+      border-radius: 2px;
+      margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--terracotta);
+      border-radius: 2px;
+      transition: width 400ms ease-out;
+    }
+
+    /* === Buttons === */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--terracotta);
+      color: var(--ivory);
+      border: none;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: opacity 150ms, transform 150ms;
+      width: 100%;
+      text-decoration: none;
+      box-shadow: 0px 0px 0px 1px var(--terracotta);
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border-cream);
+      background: var(--ivory);
+      color: var(--charcoal-warm);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 150ms, border-color 150ms;
+    }
+    .btn-back:hover {
+      background: var(--warm-sand);
+      border-color: var(--border-warm);
+    }
+
+    .btn-skip {
+      background: none;
+      border: none;
+      color: var(--coral);
+      font-size: 14px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      padding: 12px;
+      margin-top: 8px;
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+    .btn-skip:hover { text-decoration: underline; }
+
+    /* === Options (single & multi select) === */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .options.grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .options.chips {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .option {
+      background: var(--ivory);
+      border: 1px solid var(--border-cream);
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 150ms, background 150ms, transform 150ms;
+      min-height: 56px;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .option:hover {
+      border-color: var(--ring-warm);
+    }
+    .option:active { transform: scale(0.99); }
+    .option.selected {
+      border-color: var(--terracotta);
+      border-left: 3px solid var(--terracotta);
+      background: rgba(201, 100, 66, 0.04);
+    }
+
+    .option.compact {
+      flex-direction: column;
+      text-align: center;
+      padding: 16px 8px;
+      min-height: 80px;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .option.compact.selected {
+      border-left: 3px solid var(--terracotta);
+    }
+
+    .option.chip {
+      padding: 10px 16px;
+      min-height: auto;
+      border-radius: 20px;
+      font-size: 14px;
+      font-family: var(--font-sans);
+      color: var(--charcoal-warm);
+      font-weight: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .option.chip.selected {
+      background: var(--terracotta);
+      color: var(--ivory);
+      border-color: var(--terracotta);
+      border-left-width: 1px;
+    }
+
+    .option-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--near-black);
+      line-height: 1.4;
+    }
+    .option-desc {
+      font-size: 13px;
+      color: var(--stone-gray);
+      line-height: 1.4;
+      margin-top: 2px;
+    }
+    .option.selected .option-title {
+      color: var(--near-black);
+    }
+
+    /* === Checkbox (multi-select) === */
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--ring-warm);
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: background 150ms, border-color 150ms;
+      position: relative;
+    }
+    .option.selected .checkbox {
+      background: var(--terracotta);
+      border-color: var(--terracotta);
+    }
+    .option.selected .checkbox::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 10px;
+      border: 2px solid var(--ivory);
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    /* === Form Fields === */
+    .form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--stone-gray);
+      margin-bottom: 6px;
+      font-weight: 500;
+      letter-spacing: 0.1px;
+    }
+    .input-field {
+      width: 100%;
+      background: var(--ivory);
+      border: 1px solid var(--border-cream);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-family: var(--font-sans);
+      color: var(--near-black);
+      outline: none;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    .input-field:focus {
+      border-color: var(--focus-blue);
+      box-shadow: 0 0 0 3px rgba(56, 152, 236, 0.15);
+    }
+    .input-field::placeholder { color: var(--warm-silver); }
+
+    .input-textarea {
+      width: 100%;
+      background: var(--ivory);
+      border: 1px solid var(--border-cream);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 16px;
+      font-family: var(--font-sans);
+      color: var(--near-black);
+      outline: none;
+      resize: vertical;
+      transition: border-color 150ms, box-shadow 150ms;
+      line-height: 1.6;
+    }
+    .input-textarea:focus {
+      border-color: var(--focus-blue);
+      box-shadow: 0 0 0 3px rgba(56, 152, 236, 0.15);
+    }
+    .input-textarea::placeholder { color: var(--warm-silver); }
+
+    /* === Thank You Screen === */
+    .next-steps-card {
+      background: var(--ivory);
+      border: 1px solid var(--border-cream);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: left;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .next-steps-card ul {
+      list-style: none;
+      padding: 0;
+    }
+    .next-steps-card li {
+      font-size: 14px;
+      color: var(--olive-gray);
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-cream);
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .next-steps-card li:last-child { border-bottom: none; }
+    .next-steps-li-icon {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .share-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      width: 100%;
+    }
+    .btn-share {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      color: var(--ivory);
+      background: var(--dark-surface);
+      transition: opacity 150ms;
+    }
+    .btn-share:hover { opacity: 0.85; }
+    .btn-share:active { transform: scale(0.98); }
+
+    .confidentiality {
+      font-size: 12px;
+      color: var(--stone-gray);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    /* === Utilities === */
+    .mt-24 { margin-top: 24px; }
+    .hidden { display: none !important; }
+
+    /* === Loading state on submit === */
+    .btn-primary.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .btn-primary.loading::after {
+      content: '';
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.5);
+      border-top-color: var(--ivory);
+      border-radius: 50%;
+      animation: spin 600ms linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* === Responsive: Tablet === */
+    @media (min-width: 768px) {
+      h1 { font-size: 36px; }
+      h2 { font-size: 26px; }
+      .screen { padding: 0 24px 48px; }
+      #app { box-shadow: var(--shadow-whisper); }
+    }
+
+    /* === Responsive: Desktop === */
+    @media (min-width: 992px) {
+      body { padding: 24px 0; }
+      #app {
+        border-radius: 16px;
+        min-height: auto;
+        border: 1px solid var(--border-cream);
+        overflow: visible;
+      }
+      .screen {
+        min-height: 0;
+      }
+      .screen.active {
+        min-height: 600px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+
+    <!-- =========================================
+         Screen 0: Welcome
+         ========================================= -->
+    <div class="screen active" data-screen="0">
+      <div class="screen-content center">
+        <div class="welcome-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c96442" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <h1>Help Us Build a Better GST Reconciliation Tool</h1>
+        <p class="subtitle">We're building an AI tool that automates GSTR-2A/2B vs books matching. Your answers help us build exactly what CAs need.</p>
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-value">3 min</div>
+            <div class="stat-label">to complete</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">5</div>
+            <div class="stat-label">quick questions</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">Free</div>
+            <div class="stat-label">recon of your data</div>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="goTo(1)">Let's Start</button>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 1: Current Process (Required)
+         ========================================= -->
+    <div class="screen" data-screen="1">
+      <div class="screen-header">
+        <button class="btn-back" onclick="goBack()" aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="progress-info">Step 1 of 5</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:20%"></div></div>
+      <div class="screen-content">
+        <h2>How do you reconcile GSTR-2A/2B with purchase books today?</h2>
+        <p class="helper">Pick the one that best describes your primary method</p>
+        <div class="options" data-field="currentMethod" data-type="single">
+          <div class="option" data-value="Excel / Manual matching" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Excel / Manual matching</div>
+              <div class="option-desc">Download CSVs, open side-by-side, match invoices manually</div>
+            </div>
+          </div>
+          <div class="option" data-value="ClearTax / Suvit / GSTHero" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">ClearTax / Suvit / GSTHero</div>
+              <div class="option-desc">Using a dedicated tool for reconciliation</div>
+            </div>
+          </div>
+          <div class="option" data-value="Tally reports + manual checking" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Tally reports + manual checking</div>
+              <div class="option-desc">Export from Tally, compare with GSTN data manually</div>
+            </div>
+          </div>
+          <div class="option" data-value="We don't reconcile regularly" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">We don't reconcile regularly</div>
+              <div class="option-desc">Only check when there's a notice or during annual filing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 2: Practice Scale (Required)
+         ========================================= -->
+    <div class="screen" data-screen="2">
+      <div class="screen-header">
+        <button class="btn-back" onclick="goBack()" aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="progress-info">Step 2 of 5</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+      <div class="screen-content">
+        <h2>How many GST clients do you handle?</h2>
+        <p class="helper">This helps us understand the right pricing tier for firms like yours</p>
+        <div class="options grid-2" data-field="clientCount" data-type="single-no-advance">
+          <div class="option compact" data-value="1-10" onclick="selectOption(this)">
+            <div class="option-title">1-10</div>
+            <div class="option-desc">Individual CA</div>
+          </div>
+          <div class="option compact" data-value="10-30" onclick="selectOption(this)">
+            <div class="option-title">10-30</div>
+            <div class="option-desc">Small firm</div>
+          </div>
+          <div class="option compact" data-value="30-100" onclick="selectOption(this)">
+            <div class="option-title">30-100</div>
+            <div class="option-desc">Mid-size firm</div>
+          </div>
+          <div class="option compact" data-value="100+" onclick="selectOption(this)">
+            <div class="option-title">100+</div>
+            <div class="option-desc">Large practice</div>
+          </div>
+        </div>
+
+        <h2 class="mt-24">How many days per month does reconciliation take?</h2>
+        <p class="helper">Total time across your team for all clients</p>
+        <div class="options chips" data-field="timeSpent" data-type="single-no-advance">
+          <div class="option chip" data-value="Less than 1 day" onclick="selectOption(this)">Less than 1 day</div>
+          <div class="option chip" data-value="1-2 days" onclick="selectOption(this)">1-2 days</div>
+          <div class="option chip" data-value="3-5 days" onclick="selectOption(this)">3-5 days</div>
+          <div class="option chip" data-value="5+ days" onclick="selectOption(this)">5+ days</div>
+        </div>
+
+        <button class="btn-primary mt-24 hidden" id="screen2-next" onclick="goTo(3)">Next</button>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 3: Pain Points (Required, Multi-select)
+         ========================================= -->
+    <div class="screen" data-screen="3">
+      <div class="screen-header">
+        <button class="btn-back" onclick="goBack()" aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="progress-info">Step 3 of 5</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:60%"></div></div>
+      <div class="screen-content">
+        <h2>What frustrates you most about GST reconciliation?</h2>
+        <p class="helper">Select all that apply -- this shapes what we build first</p>
+        <div class="options" data-field="painPoints" data-type="multi">
+          <div class="option" data-value="Invoice number formatting mismatches" onclick="toggleOption(this)">
+            <div class="checkbox"></div>
+            <div class="option-text">
+              <div class="option-title">Invoice numbers don't match between 2A and books (formatting differences)</div>
+            </div>
+          </div>
+          <div class="option" data-value="Vendors file late" onclick="toggleOption(this)">
+            <div class="checkbox"></div>
+            <div class="option-text">
+              <div class="option-title">Vendors file late -- invoices appear in wrong month's GSTR-2A</div>
+            </div>
+          </div>
+          <div class="option" data-value="Amount mismatches" onclick="toggleOption(this)">
+            <div class="checkbox"></div>
+            <div class="option-text">
+              <div class="option-title">Amount mismatches (rounding, TDS adjustments)</div>
+            </div>
+          </div>
+          <div class="option" data-value="Chasing vendors" onclick="toggleOption(this)">
+            <div class="checkbox"></div>
+            <div class="option-text">
+              <div class="option-title">Chasing vendors for corrections is time-consuming</div>
+            </div>
+          </div>
+          <div class="option" data-value="Deadline pressure" onclick="toggleOption(this)">
+            <div class="checkbox"></div>
+            <div class="option-text">
+              <div class="option-title">Filing deadline pressure -- reconciliation happens last minute</div>
+            </div>
+          </div>
+          <div class="option" data-value="ITC rejections" onclick="toggleOption(this)">
+            <div class="checkbox"></div>
+            <div class="option-text">
+              <div class="option-title">ITC claims getting rejected due to missed mismatches</div>
+            </div>
+          </div>
+          <div class="option" data-value="Cannot scale" onclick="toggleOption(this)">
+            <div class="checkbox"></div>
+            <div class="option-text">
+              <div class="option-title">Can't scale -- reconciliation bottlenecks client onboarding</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary mt-24" onclick="goTo(4)">Next</button>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 4: Pricing Validation (Required)
+         ========================================= -->
+    <div class="screen" data-screen="4">
+      <div class="screen-header">
+        <button class="btn-back" onclick="goBack()" aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="progress-info">Step 4 of 5</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+      <div class="screen-content">
+        <h2>If a tool could auto-reconcile all your clients in minutes instead of days, what would you pay monthly?</h2>
+        <p class="helper">Be honest -- this directly shapes our pricing. No wrong answer.</p>
+        <div class="options" data-field="willingnessToPay" data-type="single-no-advance">
+          <div class="option" data-value="Rs 0" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Rs 0 -- I'd only use a free tool</div>
+            </div>
+          </div>
+          <div class="option" data-value="Rs 1000-2000" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Rs 1,000 - Rs 2,000/month</div>
+              <div class="option-desc">Cost of a few hours of staff time</div>
+            </div>
+          </div>
+          <div class="option" data-value="Rs 3000-5000" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Rs 3,000 - Rs 5,000/month</div>
+              <div class="option-desc">About 1-2 days of junior CA salary</div>
+            </div>
+          </div>
+          <div class="option" data-value="Rs 5000-10000" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Rs 5,000 - Rs 10,000/month</div>
+              <div class="option-desc">Worth it if it handles 50+ clients automatically</div>
+            </div>
+          </div>
+          <div class="option" data-value="Rs 10000+" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Rs 10,000+/month</div>
+              <div class="option-desc">If it replaces a full-time resource</div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="mt-24">What would make you switch from your current method?</h2>
+        <p class="helper">Optional -- tell us in your own words</p>
+        <textarea
+          class="input-textarea"
+          data-field="switchReason"
+          placeholder="Type your answer here... (optional)"
+          rows="3"
+        ></textarea>
+        <button class="btn-primary mt-24" onclick="goTo(5)">Next</button>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 5: Tools & Export (Required)
+         ========================================= -->
+    <div class="screen" data-screen="5">
+      <div class="screen-header">
+        <button class="btn-back" onclick="goBack()" aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="progress-info">Step 5 of 5</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      <div class="screen-content">
+        <h2>Which accounting software do your clients use?</h2>
+        <p class="helper">Select all that apply -- helps us prioritize integrations</p>
+        <div class="options chips" data-field="accountingSoftware" data-type="multi">
+          <div class="option chip" data-value="Tally Prime" onclick="toggleOption(this)">Tally Prime</div>
+          <div class="option chip" data-value="Tally ERP 9" onclick="toggleOption(this)">Tally ERP 9</div>
+          <div class="option chip" data-value="Zoho Books" onclick="toggleOption(this)">Zoho Books</div>
+          <div class="option chip" data-value="Busy" onclick="toggleOption(this)">Busy</div>
+          <div class="option chip" data-value="Marg" onclick="toggleOption(this)">Marg</div>
+          <div class="option chip" data-value="QuickBooks" onclick="toggleOption(this)">QuickBooks</div>
+          <div class="option chip" data-value="Excel only" onclick="toggleOption(this)">Excel only</div>
+          <div class="option chip" data-value="Other" onclick="toggleOption(this)">Other</div>
+        </div>
+
+        <h2 class="mt-24">How do you currently export data for reconciliation?</h2>
+        <p class="helper">This tells us what file formats to support on Day 1</p>
+        <div class="options" data-field="exportMethod" data-type="single-no-advance">
+          <div class="option" data-value="CSV from GST portal + Tally export" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Download CSV from GST portal + export from Tally</div>
+            </div>
+          </div>
+          <div class="option" data-value="CSV from GST portal + Excel" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Download CSV from GST portal + Excel spreadsheet</div>
+            </div>
+          </div>
+          <div class="option" data-value="ClearTax/Suvit API" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">ClearTax/Suvit pulls data directly via API</div>
+            </div>
+          </div>
+          <div class="option" data-value="Not sure" onclick="selectOption(this)">
+            <div class="option-text">
+              <div class="option-title">Not sure -- my staff handles this</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary mt-24" onclick="goTo(6)">Next</button>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 6: CSV Upload (Optional / Bonus)
+         ========================================= -->
+    <div class="screen" data-screen="6">
+      <div class="screen-header">
+        <button class="btn-back" onclick="goBack()" aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="progress-info">Bonus</div>
+      </div>
+      <div class="screen-content center">
+        <div class="welcome-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c96442" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <h2>Want to see what our AI catches in YOUR data?</h2>
+        <p class="subtitle">Share a sample GSTR-2A/2B CSV and your purchase register. We'll run our AI on it and send you a free mismatch report within 48 hours.</p>
+        <a
+          href="YOUR_GOOGLE_DRIVE_FOLDER_LINK"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-primary"
+          onclick="markWantsFreeRecon()"
+        >Open Upload Folder</a>
+        <p class="confidentiality">Your data stays confidential and is only used for this analysis</p>
+        <button class="btn-skip" onclick="goTo(7)">Skip this step</button>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 7: Early Access (Optional)
+         ========================================= -->
+    <div class="screen" data-screen="7">
+      <div class="screen-header">
+        <button class="btn-back" onclick="goBack()" aria-label="Go back">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="progress-info">Almost done</div>
+      </div>
+      <div class="screen-content">
+        <h2>Want early access when we launch?</h2>
+        <p class="subtitle">Founding members get 40% off for life + shape the product roadmap</p>
+        <div class="form-fields">
+          <div class="field">
+            <label for="input-name">Your Name</label>
+            <input
+              type="text"
+              id="input-name"
+              class="input-field"
+              data-field="name"
+              placeholder="CA Rajesh Sharma"
+              autocomplete="name"
+            >
+          </div>
+          <div class="field">
+            <label for="input-whatsapp">WhatsApp Number</label>
+            <input
+              type="tel"
+              id="input-whatsapp"
+              class="input-field"
+              data-field="whatsapp"
+              placeholder="+91 98765 43210"
+              autocomplete="tel"
+            >
+          </div>
+          <div class="field">
+            <label for="input-email">Email (optional)</label>
+            <input
+              type="email"
+              id="input-email"
+              class="input-field"
+              data-field="email"
+              placeholder="ca.rajesh@gmail.com"
+              autocomplete="email"
+            >
+          </div>
+          <div class="field">
+            <label for="input-city">City (optional)</label>
+            <input
+              type="text"
+              id="input-city"
+              class="input-field"
+              data-field="city"
+              placeholder="Pune"
+              autocomplete="address-level2"
+            >
+          </div>
+        </div>
+        <button class="btn-primary mt-24" id="submit-btn" onclick="submitForm()">Submit</button>
+        <button class="btn-skip" onclick="submitForm()">Skip -- just submit my answers</button>
+      </div>
+    </div>
+
+    <!-- =========================================
+         Screen 8: Thank You
+         ========================================= -->
+    <div class="screen" data-screen="8">
+      <div class="screen-content center">
+        <div class="welcome-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c96442" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h2>Thank you. Your input is invaluable.</h2>
+        <p class="subtitle">We're building this tool specifically based on feedback from CAs like you.</p>
+        <div class="next-steps-card">
+          <h3>What happens next</h3>
+          <ul>
+            <li>
+              <span class="next-steps-li-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c96442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </span>
+              If you uploaded data -- free mismatch report within 48 hrs
+            </li>
+            <li>
+              <span class="next-steps-li-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c96442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </span>
+              If you signed up -- early access invite when we launch
+            </li>
+            <li>
+              <span class="next-steps-li-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c96442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </span>
+              Questions? WhatsApp us at +91-XXXXX-XXXXX
+            </li>
+          </ul>
+        </div>
+        <p class="helper mt-24">Know a CA who'd find this useful?</p>
+        <div class="share-buttons">
+          <button class="btn-share btn-whatsapp" onclick="shareWhatsApp()">Share on WhatsApp</button>
+          <button class="btn-share btn-linkedin" onclick="shareLinkedIn()">Share on LinkedIn</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /#app -->
+
+  <script>
+    // =============================================
+    // Form State
+    // =============================================
+    const formData = {
+      currentMethod: '',
+      clientCount: '',
+      timeSpent: '',
+      painPoints: [],
+      willingnessToPay: '',
+      switchReason: '',
+      accountingSoftware: [],
+      exportMethod: '',
+      wantsFreeRecon: false,
+      name: '',
+      whatsapp: '',
+      email: '',
+      city: ''
+    };
+
+    let currentScreen = 0;
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz6vAo6Tphs556aqvh-KCOj8unN6QMoITdQvCX7ZYljs5__fO0Iwp1pKyTcFNYII7oDeQ/exec';
+
+    // =============================================
+    // Navigation
+    // =============================================
+    function goTo(n) {
+      const currentEl = document.querySelector('.screen.active');
+      const nextEl = document.querySelector('[data-screen="' + n + '"]');
+      if (!currentEl || !nextEl || currentEl === nextEl) return;
+
+      const goingForward = n > currentScreen;
+
+      // Slide current screen out
+      currentEl.classList.remove('active');
+      currentEl.classList.add(goingForward ? 'slide-out-left' : 'slide-in-right');
+
+      // Prepare next screen (entering from appropriate side)
+      nextEl.style.display = 'flex';
+      nextEl.style.flexDirection = 'column';
+      nextEl.classList.add(goingForward ? 'slide-in-right' : 'slide-out-left');
+
+      // Double rAF ensures the browser has painted the initial state before transitioning
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          // Hide outgoing
+          currentEl.style.display = 'none';
+          currentEl.classList.remove('slide-out-left', 'slide-in-right');
+
+          // Activate incoming
+          nextEl.classList.remove('slide-in-right', 'slide-out-left');
+          nextEl.classList.add('active');
+        });
+      });
+
+      currentScreen = n;
+      window.scrollTo(0, 0);
+    }
+
+    function goBack() {
+      if (currentScreen > 0) goTo(currentScreen - 1);
+    }
+
+    // =============================================
+    // Single Select — auto-advance on type="single"
+    // =============================================
+    function selectOption(el) {
+      var container = el.closest('.options');
+      var field = container.dataset.field;
+      var type = container.dataset.type;
+
+      // Deselect siblings
+      container.querySelectorAll('.option').forEach(function(o) {
+        o.classList.remove('selected');
+      });
+      el.classList.add('selected');
+      formData[field] = el.dataset.value;
+
+      // Auto-advance only for type="single"
+      if (type === 'single') {
+        setTimeout(function() { goTo(currentScreen + 1); }, 300);
+      }
+
+      // Screen 2: show Next button once both sub-questions answered
+      if (currentScreen === 2) {
+        checkScreen2();
+      }
+    }
+
+    function checkScreen2() {
+      var btn = document.getElementById('screen2-next');
+      if (formData.clientCount && formData.timeSpent) {
+        btn.classList.remove('hidden');
+      }
+    }
+
+    // =============================================
+    // Multi Select (toggle)
+    // =============================================
+    function toggleOption(el) {
+      var container = el.closest('.options');
+      var field = container.dataset.field;
+      var value = el.dataset.value;
+
+      el.classList.toggle('selected');
+
+      if (Array.isArray(formData[field])) {
+        var idx = formData[field].indexOf(value);
+        if (idx > -1) {
+          formData[field].splice(idx, 1);
+        } else {
+          formData[field].push(value);
+        }
+      }
+    }
+
+    // =============================================
+    // Bonus screen: mark wants free recon
+    // =============================================
+    function markWantsFreeRecon() {
+      formData.wantsFreeRecon = true;
+      // Let the link open naturally, then navigate after a short delay
+      setTimeout(function() { goTo(7); }, 800);
+    }
+
+    // =============================================
+    // Collect text inputs before submit
+    // =============================================
+    function collectTextFields() {
+      document.querySelectorAll('.input-field, .input-textarea').forEach(function(input) {
+        var field = input.dataset.field;
+        if (field) formData[field] = input.value.trim();
+      });
+    }
+
+    // =============================================
+    // Submit
+    // =============================================
+    async function submitForm() {
+      collectTextFields();
+
+      var submitBtn = document.getElementById('submit-btn');
+      if (submitBtn) {
+        submitBtn.classList.add('loading');
+        submitBtn.textContent = 'Submitting...';
+      }
+
+      var payload = {
+        timestamp: new Date().toISOString(),
+        currentMethod: formData.currentMethod,
+        clientCount: formData.clientCount,
+        timeSpent: formData.timeSpent,
+        painPoints: formData.painPoints.join(', '),
+        willingnessToPay: formData.willingnessToPay,
+        switchReason: formData.switchReason,
+        accountingSoftware: formData.accountingSoftware.join(', '),
+        exportMethod: formData.exportMethod,
+        wantsFreeRecon: formData.wantsFreeRecon ? 'Yes' : 'No',
+        name: formData.name,
+        whatsapp: formData.whatsapp,
+        email: formData.email,
+        city: formData.city
+      };
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (e) {
+        // no-cors mode silently succeeds; log errors for debugging only
+        console.error('Submit error:', e);
+      }
+
+      goTo(8);
+    }
+
+    // =============================================
+    // Share
+    // =============================================
+    function shareWhatsApp() {
+      var text = encodeURIComponent(
+        'Hey, someone is building an AI tool for GST reconciliation. Quick 3-min survey, they will do a free recon of your data: ' +
+        window.location.href
+      );
+      // Use Web Share API on mobile if available, fallback to wa.me
+      if (navigator.share) {
+        navigator.share({
+          title: 'GST Reconciliation Survey',
+          text: 'Help shape an AI tool for GST reconciliation. Get a free mismatch report of your data.',
+          url: window.location.href
+        }).catch(function() {
+          window.open('https://wa.me/?text=' + text, '_blank');
+        });
+      } else {
+        window.open('https://wa.me/?text=' + text, '_blank');
+      }
+    }
+
+    function shareLinkedIn() {
+      var url = encodeURIComponent(window.location.href);
+      window.open('https://www.linkedin.com/sharing/share-offsite/?url=' + url, '_blank');
+    }
+  </script>
+</body>
+</html>
